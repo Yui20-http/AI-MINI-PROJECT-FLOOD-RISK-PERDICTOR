@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flood Signal / India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#overview"><span class="brand-mark">↗</span><span>FLOOD SIGNAL</span></a>
+  <nav aria-label="Main navigation"><a class="active" href="#overview">OVERVIEW</a><a href="#predict">PREDICT</a><a href="#signals">SIGNALS</a><a href="#dataset">DATASET</a></nav>
+  <div class="live-indicator"><span></span> SYSTEM LIVE</div>
+</header>
+
+<main id="overview">
+  <section class="hero">
+    <div class="eyebrow">INDIA / FLOOD RISK INTELLIGENCE / 2026</div>
+    <h1>Read the water<br><em>before it rises.</em></h1>
+    <p class="hero-copy">Search any place in India and combine live conditions with the patterns learned from your flood-risk dataset.</p>
+    <a class="scroll-cue" href="#predict"><span>↓</span> START WITH A LOCATION</a>
+  </section>
+
+  <section class="metrics" aria-label="Project metrics">
+    <div><strong>10,000</strong><span>DATASET RECORDS</span></div><div><strong>14</strong><span>RECORDED FEATURES</span></div><div><strong>RF</strong><span>CLASSIFICATION MODEL</span></div><div><strong>INDIA</strong><span>LOCATION COVERAGE</span></div>
+  </section>
+
+  <section id="predict" class="workspace-section">
+    <div class="section-heading"><div><span class="section-number">01</span><h2>Location intelligence</h2></div><p>Pick a place. The dashboard pulls the conditions needed for the model automatically.</p></div>
+    <form action="/predict" method="post" class="predict-form">
+      <div class="search-panel">
+        <div class="panel-label">01 / FIND A PLACE</div>
+        <label for="place-search">Search city, district, or landmark<div class="search-row"><input id="place-search" type="search" placeholder="Try Mumbai, Guwahati, Chennai..." autocomplete="off"><button type="button" id="search-place">SEARCH <span>↗</span></button></div></label>
+        <button type="button" class="location-button" id="use-location">USE MY LOCATION <span>◎</span></button>
+        <label for="place-results" class="results-label">Matching places<select id="place-results" disabled><option>Search for a place to begin</option></select></label>
+        <p id="location-status" class="location-status" role="status">Live weather and location data will appear here.</p>
+        <div class="map-frame" aria-label="Google map for the selected place">
+          <iframe id="location-map" title="Selected location on Google Maps" src="https://www.google.com/maps?q=20.5937,78.9629&z=5&output=embed" loading="lazy"></iframe>
+          <span class="map-tag">GOOGLE MAP / LOCATION CONTEXT</span>
+        </div>
+        <div class="forecast-panel" aria-live="polite">
+          <div class="panel-label">04 / SEVEN-DAY OUTLOOK</div>
+          <div id="forecast-grid" class="forecast-grid"><p class="forecast-empty">Search a place to see the upcoming weather pattern.</p></div>
+        </div>
+        <div class="signal-panel" aria-live="polite">
+          <div class="panel-label">05 / RISK SIGNAL MATRIX</div>
+          <div id="signal-bars" class="signal-bars"><p class="forecast-empty">Live signals will appear after a place is selected.</p></div>
+          <p id="readiness-note" class="readiness-note"></p>
+        </div>
+      </div>
+      <div class="data-panel"><div class="panel-label">02 / CONDITIONS DETECTED</div><div class="data-grid">
+        <label>Latitude<input type="number" step="any" name="latitude" id="latitude" value="{{ result.inputs.get('latitude', '') if result else '' }}" required readonly></label>
+        <label>Longitude<input type="number" step="any" name="longitude" id="longitude" value="{{ result.inputs.get('longitude', '') if result else '' }}" required readonly></label>
+        <label>Rainfall / mm<input type="number" step="any" name="rainfall" id="rainfall" value="{{ result.inputs.get('rainfall', '') if result else '' }}" required readonly></label>
+        <label>Temperature / °C<input type="number" step="any" name="temperature" id="temperature" value="{{ result.inputs.get('temperature', '') if result else '' }}" required readonly></label>
+        <label>Humidity / %<input type="number" step="any" name="humidity" id="humidity" value="{{ result.inputs.get('humidity', '') if result else '' }}" required readonly></label>
+        <label>River discharge / m³/s<input type="number" step="any" name="river_discharge" id="river-discharge" value="{{ result.inputs.get('river_discharge', '') if result else '' }}" required readonly></label>
+        <label>Water level / m<input type="number" step="any" name="water_level" id="water-level" value="{{ result.inputs.get('water_level', '') if result else '' }}" required readonly></label>
+        <label>Elevation / m<input type="number" step="any" name="elevation" id="elevation" value="{{ result.inputs.get('elevation', '') if result else '' }}" required readonly></label>
+      </div></div>
+      <div class="data-panel lower-panel"><div class="panel-label">03 / LAND &amp; EXPOSURE</div><div class="data-grid">
+        <label>Land cover<select name="land_cover" required>{% for opt in land_cover_options %}<option value="{{ opt }}" {% if result and result.inputs.get('land_cover') == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}</select></label>
+        <label>Soil type<select name="soil_type" required>{% for opt in soil_type_options %}<option value="{{ opt }}" {% if result and result.inputs.get('soil_type') == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}</select></label>
+        <label>Population density<input type="number" step="any" name="population_density" id="population-density" value="{{ result.inputs.get('population_density', '') if result else '' }}" required readonly></label>
+        <label>Infrastructure<select name="infrastructure" required><option value="1">Present</option><option value="0">Absent</option></select></label>
+        <label>Historical floods<select name="historical_floods" required><option value="1">Recorded</option><option value="0">No record</option></select></label>
+      </div></div>
+      <button class="predict-button" type="submit"><span>RUN FLOOD RISK ANALYSIS</span><b>↗</b></button>
+    </form>
+  </section>
+
+  {% if result %}<section class="result {{ result.css_class }}" aria-live="polite"><div><span class="section-number">RESULT</span><h2>{{ result.label }} flood risk</h2><p>Model estimate for the selected location.</p></div><strong>{{ result.probability }}<small>%</small></strong><button type="button" class="report-button" onclick="window.print()">PRINT REPORT <span>↗</span></button></section>{% else %}<section class="result idle" aria-live="polite"><div><span class="section-number">RESULT</span><h2>Awaiting a location</h2><p>Search and select a place to run the model.</p></div><strong>00.0<small>%</small></strong></section>{% endif %}
+
+  <section id="signals" class="workspace-section signals-section"><div class="section-heading"><div><span class="section-number">02</span><h2>Signals in the model</h2></div><p>Each prediction is shaped by the same fields in your supplied dataset.</p></div><div class="signal-grid">
+    <article><span>01</span><h3>Atmosphere</h3><p>Rainfall, temperature and humidity describe the pressure building around a location.</p></article><article><span>02</span><h3>Water system</h3><p>River discharge and water level capture the immediate hydrological load.</p></article><article><span>03</span><h3>Exposure</h3><p>Elevation, land cover, soil, population and flood history frame local vulnerability.</p></article>
+  </div></section>
+  <section id="dataset" class="dataset-strip"><div><span class="section-number">03</span><h2>Your dataset, kept at the core.</h2></div><p>The interface uses <strong>flood_risk_dataset_india.csv</strong> and the trained Random Forest artifacts in <strong>model/</strong>. Live location data only supplies the current conditions for the searched place.</p></section>
+</main>
+<footer><span>FLOOD SIGNAL / INDIA</span><span>RANDOM FOREST CLASSIFIER · LOCAL DATA PIPELINE</span></footer>
+
+<script>
+const searchInput = document.getElementById("place-search"); const searchButton = document.getElementById("search-place"); const useLocationButton = document.getElementById("use-location"); const placeResults = document.getElementById("place-results"); const statusText = document.getElementById("location-status"); const locationMap = document.getElementById("location-map"); const forecastGrid = document.getElementById("forecast-grid"); const signalBars = document.getElementById("signal-bars"); const readinessNote = document.getElementById("readiness-note");
+function setStatus(message, isError = false) { statusText.textContent = message; statusText.classList.toggle("error", isError); }
+function setValue(id, value, digits = 2) { const input = document.getElementById(id); input.value = Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : ""; }
+function showIdleResult() { const result = document.querySelector(".result"); result.className = "result idle"; result.innerHTML = '<div><span class="section-number">RESULT</span><h2>Awaiting a location</h2><p>Search and select a place to run the model.</p></div><strong>00.0<small>%</small></strong>'; }
+function clearLocationValues() { ["latitude", "longitude", "rainfall", "temperature", "humidity", "river-discharge", "water-level", "elevation", "population-density"].forEach((id) => { document.getElementById(id).value = ""; }); forecastGrid.innerHTML = '<p class="forecast-empty">Search a place to see the upcoming weather pattern.</p>'; signalBars.innerHTML = '<p class="forecast-empty">Live signals will appear after a place is selected.</p>'; readinessNote.textContent = ""; showIdleResult(); }
+async function runPrediction() { setStatus("Live data loaded. Calculating flood risk..."); const response = await fetch("/predict", { method: "POST", body: new FormData(document.querySelector(".predict-form")) }); if (!response.ok) throw new Error("Prediction failed"); const html = await response.text(); const nextResult = new DOMParser().parseFromString(html, "text/html").querySelector(".result"); if (nextResult) document.querySelector(".result").replaceWith(nextResult); setStatus("Live data loaded. Flood-risk analysis complete."); }
+function renderForecast(daily) { if (!daily?.time?.length) return; const start = Math.max(0, daily.time.length - 7); forecastGrid.innerHTML = daily.time.slice(start).map((date, offset) => { const index = start + offset; const day = new Date(`${date}T12:00:00`).toLocaleDateString("en-IN", { weekday: "short" }); return `<div class="forecast-day"><span>${day}</span><strong>${Math.round(daily.temperature_2m_max[index])}°</strong><small>${Math.round(daily.temperature_2m_min[index])}° / ${Math.round(daily.precipitation_sum[index] || 0)} mm</small></div>`; }).join(""); }
+function renderSignals(current, elevation, discharge) {
+  const signals = [{ name: "Rainfall", value: Number(current.precipitation ?? current.rain ?? 0), max: 80, unit: "mm" }, { name: "Humidity", value: Number(current.relative_humidity_2m || 0), max: 100, unit: "%" }, { name: "River discharge", value: Number(discharge || 0), max: 5000, unit: "m³/s" }, { name: "Low elevation", value: Math.max(0, 100 - Number(elevation || 0)), max: 100, unit: "index" }];
+  const elevated = signals.filter((signal) => signal.value / signal.max >= 0.65).length;
+  signalBars.innerHTML = signals.map((signal) => { const percent = Math.min(100, Math.round(signal.value / signal.max * 100)); const level = percent >= 65 ? "elevated" : percent >= 35 ? "watch" : "low"; return `<div class="signal-bar"><div><span>${signal.name}</span><strong>${signal.value.toFixed(1)} ${signal.unit}</strong></div><i><b class="${level}" style="width:${Math.max(4, percent)}%"></b></i><small>${level.toUpperCase()}</small></div>`; }).join("");
+  readinessNote.textContent = elevated > 1 ? "Several live signals are elevated. Limit exposure near rivers and monitor local alerts." : "Live signals are currently contained. Continue monitoring rainfall and nearby water levels.";
+}
+async function searchPlaces() {
+  const query = searchInput.value.trim(); if (query.length < 2) { setStatus("Enter at least two letters to search.", true); return; }
+  searchButton.disabled = true; setStatus("Searching for places...");
+  try { const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en&format=json`); if (!response.ok) throw new Error("Place search failed"); const data = await response.json(); placeResults.innerHTML = "";
+    (data.results || []).forEach((place, index) => { const option = document.createElement("option"); option.value = index; option.textContent = [place.name, place.admin1, place.country].filter(Boolean).join(", "); option.dataset.latitude = place.latitude; option.dataset.longitude = place.longitude; option.dataset.population = place.population || "1000"; placeResults.appendChild(option); }); placeResults.disabled = !data.results?.length;
+    if (!data.results?.length) { setStatus("No matching place found. Try a nearby city.", true); return; } placeResults.selectedIndex = 0; await loadPlaceData(placeResults.selectedOptions[0]);
+  } catch (error) { setStatus("Could not load place data. Check your internet connection.", true); } finally { searchButton.disabled = false; }
+}
+async function loadPlaceData(option) {
+  if (!option?.dataset.latitude) return; const { latitude, longitude } = option.dataset; setStatus("Loading live weather and river data...");
+  try { const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,rain,precipitation&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&past_days=3&forecast_days=7&timezone=auto`; const floodUrl = `https://flood-api.open-meteo.com/v1/flood?latitude=${latitude}&longitude=${longitude}&daily=river_discharge&forecast_days=1`; const [weatherResponse, floodResponse] = await Promise.all([fetch(weatherUrl), fetch(floodUrl)]); if (!weatherResponse.ok || !floodResponse.ok) throw new Error("Live data request failed"); const weather = await weatherResponse.json(); const flood = await floodResponse.json(); const current = weather.current || {}; const recentRainfall = (weather.daily?.precipitation_sum || []).slice(0, 3).reduce((total, amount) => total + (amount || 0), 0);
+    renderForecast(weather.daily);
+    locationMap.src = `https://www.google.com/maps?q=${latitude},${longitude}&z=11&output=embed`;
+    const discharge = flood.daily?.river_discharge?.[0] || 1000; const signalData = { ...current, precipitation: recentRainfall }; renderSignals(signalData, weather.elevation ?? 0, discharge); setValue("latitude", latitude, 4); setValue("longitude", longitude, 4); setValue("rainfall", recentRainfall, 1); setValue("temperature", current.temperature_2m, 1); setValue("humidity", current.relative_humidity_2m, 1); setValue("river-discharge", discharge, 1); setValue("elevation", weather.elevation ?? 0, 1); setValue("water-level", Math.max(1, 8 - Number(weather.elevation || 0) / 100), 1); setValue("population-density", option.dataset.population, 0);
+    document.querySelector("[name='land_cover']").value = "Urban"; document.querySelector("[name='soil_type']").value = "Loam"; await runPrediction();
+  } catch (error) { setStatus("The place was found, but live weather data could not be loaded.", true); }
+}
+useLocationButton.addEventListener("click", () => { if (!navigator.geolocation) { setStatus("Location access is not available in this browser.", true); return; } useLocationButton.disabled = true; setStatus("Requesting your location..."); navigator.geolocation.getCurrentPosition((position) => { const option = document.createElement("option"); option.dataset.latitude = position.coords.latitude; option.dataset.longitude = position.coords.longitude; option.dataset.population = "1000"; option.textContent = "My current location"; placeResults.innerHTML = ""; placeResults.appendChild(option); placeResults.disabled = false; placeResults.selectedIndex = 0; loadPlaceData(option).finally(() => { useLocationButton.disabled = false; }); }, () => { setStatus("Location permission was not granted. Search for a place instead.", true); useLocationButton.disabled = false; }); });
+searchInput.addEventListener("input", () => { clearLocationValues(); placeResults.disabled = true; }); searchButton.addEventListener("click", searchPlaces); searchInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); searchPlaces(); } }); placeResults.addEventListener("change", () => loadPlaceData(placeResults.selectedOptions[0]));
+</script>
+</body>
+</html>
