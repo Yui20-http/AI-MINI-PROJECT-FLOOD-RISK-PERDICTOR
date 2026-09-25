@@ -13,7 +13,7 @@ It includes:
 
 ![Flood Signal dashboard output](static/project-output.png)
 
-The screenshot shows a Mumbai location search with the seven-day rainfall trend and completed flood-risk prediction.
+The screenshot shows the desktop dashboard layout with the location search, rainfall trend area, map context, and prediction workspace.
 
 ---
 
