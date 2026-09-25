@@ -1,40 +1,69 @@
-# Flood Risk Predictor (India) — ML Web App
+# Flood Risk Predictor — AI and Application Development Practical Journal
 
-A Flask web app that predicts flood risk for **any location**, not just one city.
-You enter rainfall, elevation, water level, land cover, soil type, etc., and a
-Random Forest model (trained on 10,000 real-format records across India) returns
-a Low / Moderate / High risk band with a probability.
+This project contains a complete mini-project for a BSc IT practical journal based on the topic: Flood Risk Predictor.
 
-This mirrors the structure of the reference site you shared
-(rainfall + elevation + drainage + land-use + historical-flood data → risk level),
-but is not limited to Mumbai — it works on the whole dataset's feature set.
+It includes:
+- 10 machine learning / AI practical scripts
+- one shared helper file for consistent data loading and preprocessing
+- a Flask web app for the final mini-project
+- a project runner that executes all practicals in one go
+- honest documentation about the nature of the dataset
 
 ---
 
-## 1. Project structure
+## Project structure
 
-```
+```text
 flood-risk-predictor/
+├── app.py                              # Flask web app for flood risk prediction
+├── common.py                           # Shared helper for all practicals
+├── train_model.py                      # Trained binary model pipeline
+├── run_all.py                          # Runs practicals 1 to 10 in sequence
+├── practical_01_search.py              # BFS, DFS, A*
+├── practical_02_bayes.py               # Bayes rule + Naive Bayes
+├── practical_03_ml_basics.py           # Data prep + model training + save artifacts
+├── practical_04_linear_regression.py   # Predict Water Level
+├── practical_05_logistic_regression.py # Binary classification
+├── practical_06_cross_validation.py   # 5-fold CV comparison
+├── practical_07_decision_tree_classifier.py
+├── practical_08_decision_tree_regression.py
+├── practical_09_knn.py                # k-nearest neighbours
+├── practical_10_multiclass.py         # Low / Moderate / High classes
 ├── data/
-│   └── flood_risk_dataset_india.csv   # your dataset (10,000 rows)
-├── model/                             # created after training (model + encoders)
+│   └── flood_risk_dataset_india.csv
+├── model/
+│   ├── flood_model.pkl
+│   ├── scaler.pkl
+│   ├── encoders.pkl
+│   └── features.pkl
 ├── static/
 │   └── style.css
 ├── templates/
 │   └── index.html
-├── train_model.py                     # trains & saves the ML model
-├── app.py                             # Flask web app
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
-## 2. Open it in VS Code
+---
 
-1. Unzip the project folder you downloaded.
-2. In VS Code: **File → Open Folder →** select `flood-risk-predictor`.
-3. Open a terminal in VS Code: **Terminal → New Terminal**.
+## Practical list
 
-## 3. Set up a virtual environment
+1. Intro to AI / Search: BFS, DFS, A*
+2. Bayes Rule / Naive Bayes
+3. ML Basics: preprocessing, train/test split, scaling, RandomForest, save model
+4. Linear Regression: predict Water Level
+5. Binary Classifier: Logistic Regression
+6. k-fold Cross Validation: RandomForest and LogisticRegression
+7. Decision Tree Classifier
+8. Decision Tree Regression
+9. kNN Classifier
+10. Multiclass Classification: Low / Moderate / High
+11. PBL Mini Project: Flask app with prediction form
+
+---
+
+## Installation
 
 ```bash
 python -m venv venv
@@ -44,91 +73,60 @@ venv\Scripts\activate
 
 # Mac/Linux
 source venv/bin/activate
-```
 
-VS Code may prompt "Select interpreter" — pick the `venv` one.
-
-## 4. Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-## 5. Train the model
+---
+
+## Run all practicals
 
 ```bash
-python train_model.py
+python run_all.py
 ```
 
-This reads `data/flood_risk_dataset_india.csv`, encodes the categorical columns
-(Land Cover, Soil Type), trains a `RandomForestClassifier`, and saves:
-- `model/flood_model.pkl`
-- `model/scaler.pkl`
-- `model/encoders.pkl`
-- `model/features.pkl`
+---
 
-It also prints accuracy and a feature-importance list in the terminal — useful
-if this is for a college project report/PBL writeup.
-
-## 6. Run the web app
+## Run the web app
 
 ```bash
 python app.py
 ```
 
-Open the link it prints — normally **http://127.0.0.1:5000** — in your browser.
-Fill the form and click **Predict Flood Risk**.
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
 
 ---
 
-## 7. About the dataset — read this before you present it
+## About the dataset
 
-`flood_risk_dataset_india.csv` (from Kaggle) has these columns:
+The project uses the file `data/flood_risk_dataset_india.csv` with columns such as:
+- Latitude
+- Longitude
+- Rainfall (mm)
+- Temperature (°C)
+- Humidity (%)
+- River Discharge (m³/s)
+- Water Level (m)
+- Elevation (m)
+- Land Cover
+- Soil Type
+- Population Density
+- Infrastructure
+- Historical Floods
+- Flood Occurred
 
-| Column | Meaning |
-|---|---|
-| Latitude, Longitude | Location |
-| Rainfall (mm) | Recent/seasonal rainfall |
-| Temperature (°C), Humidity (%) | Weather |
-| River Discharge (m³/s) | Volume of water flowing in nearby river |
-| Water Level (m) | Current river/water body level |
-| Elevation (m) | Land elevation |
-| Land Cover | Water Body / Forest / Agricultural / Desert / Urban |
-| Soil Type | Clay / Peat / Loam / Sandy / Silt |
-| Population Density | People per unit area |
-| Infrastructure | 1 = flood defenses/drainage present, 0 = none |
-| Historical Floods | 1 = area has flooded before, 0 = no record |
-| Flood Occurred | Target: 1 = flood, 0 = no flood |
+This dataset is best understood as a synthetic or random-practice dataset rather than a real-world flood forecasting dataset. That means the model may show low or near-chance accuracy. In the report, this should be stated honestly instead of presenting the results as real predictive power.
 
-**Important honesty check:** when I trained on this file, accuracy came out
-around **51%** — essentially a coin flip. I checked, and the values in this
-particular CSV are randomly generated per row (there's no real statistical
-relationship between rainfall/elevation/etc. and the flood outcome). That's
-common with several of the "flood risk" datasets on Kaggle — they're meant for
-practicing the ML *pipeline*, not for a model that's actually predictive.
+This is important for a college project because it demonstrates the ML workflow correctly while being transparent about the quality of the dataset.
 
-So the code and app are fully working, but if you need a model that performs
-meaningfully better than chance for a real report, you have two options:
+---
 
-- **Use real government data** instead of/alongside this file — e.g. IMD
-  (India Meteorological Department) rainfall data, CWC (Central Water
-  Commission) flood/water-level bulletins, or your state disaster management
-  authority's historical flood records. These have real cause-effect signal.
-- **Keep this dataset for the pipeline/demo** (it's fine for a PBL/mini-project
-  showing you can build and deploy the ML + web app), but say explicitly in
-  your report that it's a synthetic dataset and note the accuracy honestly —
-  examiners generally respect that more than a suspiciously perfect number.
+## Honest note for faculty / viva
 
-I'm happy to help you swap in a real dataset (e.g. an IMD district-rainfall +
-CWC flood-records dataset) if you want a version with genuine predictive power
-— just say the word.
+The app and scripts are working and the project demonstrates all the required practicals, but the dataset itself may not contain true causal patterns between the input features and flood occurrence. Accuracy therefore may not be high. That is not a weakness of the implementation; it is an honest outcome of the data used.
 
-## 8. Ideas to extend it (optional, good for the PBL writeup)
-
-- Add a map (Leaflet.js) so users click a point instead of typing lat/long.
-- Try `XGBoostClassifier` or `LogisticRegression` and compare accuracy (ties
-  in nicely with the "Multiclass Classification" / "Decision Tree" practicals
-  in your index).
-- Add k-fold cross-validation in `train_model.py` (you already have that as
-  practical #6) and report the average accuracy instead of a single split.
-- Deploy it (Render, Railway, PythonAnywhere) like the reference site you linked.
+If you want a more realistic predictive model later, the next step would be to replace this dataset with real hydrological and meteorological data from government sources or a verified flood dataset.
