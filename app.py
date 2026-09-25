@@ -539,8 +539,8 @@ def predict():
         "Land Cover": encoders["Land Cover"].transform([form["land_cover"]])[0],
         "Soil Type": encoders["Soil Type"].transform([form["soil_type"]])[0],
         "Population Density": float(form["population_density"]),
-        "Infrastructure": int(form["infrastructure"]),
-        "Historical Floods": int(form["historical_floods"]),
+        "Infrastructure": int(form.get("infrastructure") or 0),
+        "Historical Floods": int(form.get("historical_floods") or 0),
     }
 
     X = pd.DataFrame([row], columns=FEATURES)

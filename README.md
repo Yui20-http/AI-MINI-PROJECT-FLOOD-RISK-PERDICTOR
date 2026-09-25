@@ -9,6 +9,12 @@ It includes:
 - a project runner that executes all practicals in one go
 - honest documentation about the nature of the dataset
 
+## Project output
+
+![Flood Signal dashboard output](static/project-output.png)
+
+The screenshot shows a Mumbai location search with the seven-day rainfall trend and completed flood-risk prediction.
+
 ---
 
 ## Project structure
