@@ -11,7 +11,7 @@ It includes:
 
 ## Project output
 
-![Flood Signal dashboard output](static/project-output.png)
+![Flood Signal desktop dashboard output](static/project-output-desktop.png)
 
 The screenshot shows the desktop dashboard layout with the location search, rainfall trend area, map context, and prediction workspace.
 
