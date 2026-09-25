@@ -215,11 +215,13 @@ def practical_02_bayes():
     P_not_A = 0.70
     P_B = (P_B_given_A * P_A) + (P_B_given_not_A * P_not_A)
     P_A_given_B = (P_B_given_A * P_A) / P_B
-    print("Bayes' Rule worked example:")
+    print("Bayes' Rule worked example (using the Law of Total Probability):")
     print(f"P(A) = {P_A}")
+    print(f"P(~A) = {P_not_A}")
     print(f"P(B|A) = {P_B_given_A}")
     print(f"P(B|~A) = {P_B_given_not_A}")
-    print(f"P(A|B) = {P_A_given_B:.4f}\n")
+    print(f"P(B) = P(B|A)·P(A) + P(B|~A)·P(~A) = {P_B:.4f}")
+    print(f"P(A|B) = P(B|A)·P(A) / P(B) = {P_A_given_B:.4f}\n")
 
     df = load_dataset()
     df, _ = encode_categorical_columns(df)
@@ -479,7 +481,7 @@ try:
     FEATURES = joblib.load(os.path.join(MODEL_DIR, "features.pkl"))
     LAND_COVER_OPTIONS = list(encoders["Land Cover"].classes_)
     SOIL_TYPE_OPTIONS = list(encoders["Soil Type"].classes_)
-except FileNotFoundError:
+except (FileNotFoundError, OSError, ValueError, AttributeError):
     model = None
     scaler = None
     encoders = None
