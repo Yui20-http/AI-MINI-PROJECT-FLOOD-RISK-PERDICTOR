@@ -114,7 +114,88 @@
     </form>
   </section>
 
+  <section class="preview-graph" id="preview-graph" aria-live="polite">
+    <div class="preview-header">
+      <span class="section-number">PREVIEW</span>
+      <h3>Risk trend snapshot</h3>
+    </div>
+    <div class="preview-bars" aria-hidden="true">
+      <span style="height: 18%"></span>
+      <span style="height: 26%"></span>
+      <span style="height: 34%"></span>
+      <span style="height: 42%"></span>
+      <span style="height: 29%"></span>
+      <span style="height: 16%"></span>
+      <span style="height: 12%"></span>
+    </div>
+    <p class="preview-text">Awaiting a location</p>
+  </section>
+
   {% if result %}<section class="result {{ result.css_class }}" aria-live="polite"><div><span class="section-number">RESULT</span><h2>{{ result.label }} flood risk</h2><p>Model estimate for the selected location.</p></div><strong>{{ result.probability }}<small>%</small></strong><button type="button" class="report-button" onclick="window.print()">PRINT REPORT <span>↗</span></button></section>{% else %}<section class="result idle" aria-live="polite"><div><span class="section-number">RESULT</span><h2>Awaiting a location</h2><p>Search and select a place to run the model.</p></div><strong>00.0<small>%</small></strong></section>{% endif %}
+
+  {% if result and result.summary %}
+  <section class="insights-panel" aria-live="polite">
+    <div class="section-heading"><div><span class="section-number">03</span><h2>Operational risk summary</h2></div><p>Fast guidance for teams using the prediction in the field.</p></div>
+    <div class="insights-grid">
+      <article class="insight-card">
+        <span>Risk level</span>
+        <strong>{{ result.summary.risk_level }}</strong>
+        <p>Current alert band based on rainfall timing, discharge, and exposure.</p>
+      </article>
+      <article class="insight-card">
+        <span>Pressure score</span>
+        <strong>{{ result.summary.pressure_score }}%</strong>
+        <p>Hydrological stress from precipitation, river flow, and water height.</p>
+      </article>
+      <article class="insight-card">
+        <span>Exposure score</span>
+        <strong>{{ result.summary.exposure_score }}%</strong>
+        <p>Local vulnerability from elevation, density, and historical flood records.</p>
+      </article>
+    </div>
+    <div class="insight-breakdown">
+      {% for driver in result.summary.drivers %}
+      <div class="driver-row">
+        <div class="driver-meta"><span>{{ driver.name }}</span><strong>{{ driver.score }}%</strong></div>
+        <div class="driver-bar"><i style="width: {{ driver.score }}%"></i></div>
+        <small>{{ driver.note }}</small>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="action-list">
+      <h3>Priority actions</h3>
+      {% for action in result.summary.actions %}
+      <div class="action-item"><span>{{ loop.index }}</span><p>{{ action }}</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="report-sheet" aria-label="Printable flood-risk report">
+    <div class="section-heading"><div><span class="section-number">04</span><h2>Print-ready report</h2></div><p>Exportable field brief with the location snapshot and response actions.</p></div>
+    <div class="report-layout">
+      <div class="report-box">
+        <h3>Location snapshot</h3>
+        <ul>
+          <li><span>Latitude</span><strong>{{ result.inputs.get('latitude', '—') }}</strong></li>
+          <li><span>Longitude</span><strong>{{ result.inputs.get('longitude', '—') }}</strong></li>
+          <li><span>Rainfall</span><strong>{{ result.inputs.get('rainfall', '0') }} mm</strong></li>
+          <li><span>Temperature</span><strong>{{ result.inputs.get('temperature', '0') }} °C</strong></li>
+          <li><span>Humidity</span><strong>{{ result.inputs.get('humidity', '0') }} %</strong></li>
+          <li><span>River discharge</span><strong>{{ result.inputs.get('river_discharge', '0') }} m³/s</strong></li>
+        </ul>
+      </div>
+      <div class="report-box">
+        <h3>Risk narrative</h3>
+        <p>{{ result.label }} flood risk has been identified with a model confidence of {{ result.probability }}%. The current conditions indicate elevated pressure from rainfall and river discharge, while localized exposure increases the urgency of response planning.</p>
+        <div class="report-actions">
+          {% for action in result.summary.actions %}
+          <span>{{ action }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
 
   <section id="signals" class="workspace-section signals-section"><div class="section-heading"><div><span class="section-number">02</span><h2>Signals in the model</h2></div><p>Each prediction is shaped by the same fields in your supplied dataset.</p></div><div class="signal-grid">
     <article><span>01</span><h3>Atmosphere</h3><p>Rainfall, temperature and humidity describe the pressure building around a location.</p></article><article><span>02</span><h3>Water system</h3><p>River discharge and water level capture the immediate hydrological load.</p></article><article><span>03</span><h3>Exposure</h3><p>Elevation, land cover, soil, population and flood history frame local vulnerability.</p></article>
@@ -129,6 +210,18 @@ let selectedPlaceReady = false;
 function setStatus(message, isError = false) { statusText.textContent = message; statusText.classList.toggle("error", isError); }
 function setValue(id, value, digits = 2) { const input = document.getElementById(id); input.value = Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : ""; }
 function showIdleResult() { const result = document.querySelector(".result"); if (!result) return; result.className = "result idle"; result.innerHTML = '<div><span class="section-number">RESULT</span><h2>Awaiting a location</h2><p>Search and select a place to run the model.</p></div><strong>00.0<small>%</small></strong>'; }
+function updatePreviewGraphIdle() {
+  const preview = document.getElementById("preview-graph");
+  if (!preview) return;
+  const text = preview.querySelector(".preview-text");
+  const bars = preview.querySelectorAll(".preview-bars span");
+  text.textContent = "Awaiting a location";
+  bars.forEach((bar, index) => {
+    const value = [18, 26, 34, 42, 29, 16, 12][index] || 12;
+    bar.style.height = `${value}%`;
+    bar.style.opacity = index % 2 === 0 ? "0.65" : "0.9";
+  });
+}
 function clearLocationValues() {
   selectedPlaceReady = false;
   ["latitude", "longitude", "rainfall", "temperature", "humidity", "river-discharge", "water-level", "elevation", "population-density"].forEach((id) => { document.getElementById(id).value = ""; });
@@ -140,6 +233,7 @@ function clearLocationValues() {
   forecastGrid.innerHTML = '<p class="forecast-empty">Search a place to see the upcoming weather pattern.</p>';
   signalBars.innerHTML = '<p class="forecast-empty">Live signals will appear after a place is selected.</p>';
   readinessNote.textContent = "";
+  updatePreviewGraphIdle();
   showIdleResult();
 }
 async function runPrediction() {
@@ -271,6 +365,7 @@ riskForm.addEventListener("submit", async (event) => {
 });
 searchInput.addEventListener("input", () => { clearLocationValues(); placeResults.disabled = true; }); searchButton.addEventListener("click", searchPlaces); searchInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); searchPlaces(); } }); placeResults.addEventListener("change", () => loadPlaceData(placeResults.selectedOptions[0]));
 forecastGrid.addEventListener("click", (event) => { const day = event.target.closest("[data-day-index]"); if (day) selectForecastDay(day.dataset.dayIndex); }); rainfallChart.addEventListener("click", (event) => { const day = event.target.closest("[data-day-index]"); if (day) selectForecastDay(day.dataset.dayIndex); });
+updatePreviewGraphIdle();
 clearLocationValues();
 </script>
 </body>

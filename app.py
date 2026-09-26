@@ -500,6 +500,74 @@ def risk_label(probability):
         return "High", "high"
 
 
+def build_risk_summary(form):
+    """Create a concise operational summary for the current prediction."""
+    rainfall = float(form.get("rainfall", 0) or 0)
+    humidity = float(form.get("humidity", 0) or 0)
+    river_discharge = float(form.get("river_discharge", 0) or 0)
+    water_level = float(form.get("water_level", 0) or 0)
+    elevation = float(form.get("elevation", 0) or 0)
+    population_density = float(form.get("population_density", 0) or 0)
+    infrastructure = int(form.get("infrastructure") or 0)
+    historical_floods = int(form.get("historical_floods") or 0)
+
+    pressure_score = min(
+        100,
+        round(
+            (rainfall / 90) * 35
+            + (humidity / 100) * 25
+            + (river_discharge / 2500) * 20
+            + (water_level / 4) * 15
+            + (historical_floods * 10)
+            + (infrastructure * 5),
+            1,
+        ),
+    )
+    exposure_score = min(
+        100,
+        round(
+            max(0, (60 - elevation) / 60) * 35
+            + (population_density / 8000) * 25
+            + (historical_floods * 20)
+            + (infrastructure * 10),
+            1,
+        ),
+    )
+
+    if pressure_score >= 75 or exposure_score >= 75:
+        risk_level = "High"
+    elif pressure_score >= 45 or exposure_score >= 45:
+        risk_level = "Moderate"
+    else:
+        risk_level = "Low"
+
+    drivers = [
+        {"name": "Rainfall pressure", "score": min(100, round((rainfall / 80) * 100, 1)), "note": "Surge intensity is raising runoff potential."},
+        {"name": "River discharge", "score": min(100, round((river_discharge / 2500) * 100, 1)), "note": "Channel flow is at a level that needs monitoring."},
+        {"name": "Local exposure", "score": min(100, round(exposure_score, 1)), "note": "Population density and flood history amplify the impact."},
+    ]
+
+    actions = [
+        "Inspect drainage channels and culverts before the next heavy rainfall period.",
+        "Keep emergency teams alert near low-lying roads and river crossings.",
+        "Review local flood barriers and shelter readiness in dense urban pockets.",
+    ]
+    if rainfall < 30:
+        actions[0] = "Maintain routine monitoring while rainfall remains within a manageable range."
+    if water_level > 2.5 or river_discharge > 1800:
+        actions[1] = "Increase riverbank monitoring and prepare rapid-response teams for elevated discharge."
+    if elevation < 25:
+        actions[2] = "Prioritize evacuation planning for low-elevation zones and flood-prone settlements."
+
+    return {
+        "risk_level": risk_level,
+        "pressure_score": int(pressure_score),
+        "exposure_score": int(exposure_score),
+        "drivers": drivers,
+        "actions": actions,
+    }
+
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template(
@@ -553,6 +621,7 @@ def predict():
         "label": label,
         "css_class": css_class,
         "inputs": form,
+        "summary": build_risk_summary(form),
     }
 
     return render_template(
